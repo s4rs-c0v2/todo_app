@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Todo App</title>
+</head>
+<body>
+    <h1>Todo List</h1>
+    <form method="POST" action="/">
+        <input type="text" name="content" placeholder="New task" required>
+        <button type="submit">Add Task</button>
+    </form>
+
+    <ul>
+        {% for task in tasks %}
+            <li>
+                <form action="{{ url_for('update_task', task_id=task[0]) }}" method="POST" style="display:inline;">
+                    <input type="checkbox" name="done" onchange="this.form.submit()" {% if task[2] %}checked{% endif %}>
+                </form>
+                <span style="{% if task[2] %}text-decoration: line-through;{% endif %}">
+                    {{ task[1] }} ({{ task[3].strftime('%Y-%m-%d %H:%M') }})
+                </span>
+                <form action="{{ url_for('delete_task', task_id=task[0]) }}" method="POST" style="display:inline;">
+                    <button type="submit">Delete</button>
+                </form>
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
