@@ -8,7 +8,7 @@ app = Flask(__name__)
 POSTGRES_USER = os.environ.get("POSTGRES_USER", "postgres")
 POSTGRES_PASSWORD = os.environ.get("POSTGRES_PASSWORD", "postgres")
 POSTGRES_DB = os.environ.get("POSTGRES_DB", POSTGRES_USER)  # Defaults to user name
-POSTGRES_HOST = os.environ.get("POSTGRES_HOST", "172.17.0.2")
+POSTGRES_HOST = os.environ.get("POSTGRES_HOST", "db")
 POSTGRES_PORT = os.environ.get("POSTGRES_PORT", "5432")
 
 DB_CONFIG = {

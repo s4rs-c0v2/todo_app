@@ -25,7 +25,7 @@ The application uses the following environment variables (with default values):
 - `POSTGRES_USER` (default: "postgres")
 - `POSTGRES_PASSWORD` (default: "postgres")
 - `POSTGRES_DB` (default: same as POSTGRES_USER)
-- `POSTGRES_HOST` (default: "172.17.0.2")
+- `POSTGRES_HOST` (default: "db")
 - `POSTGRES_PORT` (default: "5432")
 
 ## Installation
@@ -89,14 +89,3 @@ Feel free to fork this repository and submit pull requests. For major changes, p
 ## License
 
 [MIT](https://choosealicense.com/licenses/mit/)
-```
-
-This README provides a comprehensive overview of your application, including setup instructions, features, and technical details. You may want to customize it further based on your specific needs or add sections like:
-
-- Detailed deployment instructions
-- Screenshots of the application
-- Troubleshooting guide
-- Code examples
-- Testing instructions
-
-Remember to update the repository URL and any specific requirements or configurations particular to your implementation.
