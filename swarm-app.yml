@@ -19,13 +19,26 @@ services:
       restart_policy:
         condition: on-failure
 
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
+
   app:
-    image: todo_app_app
+    image: ${REGISTRY:-localhost}/todo-app:${TAG:-latest}
     environment:
       - POSTGRES_HOST=db
       - POSTGRES_USER=${POSTGRES_USER:-todo_user}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-todo_pass}
       - POSTGRES_DB=${POSTGRES_DB:-todo_app}
+      - REDIS_URL=redis://redis:6379
     ports:
       - "5000:5000"
     deploy:

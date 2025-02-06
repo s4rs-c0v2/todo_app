@@ -3,12 +3,23 @@ from flask_socketio import SocketIO, emit
 import psycopg2
 import os
 from datetime import datetime
+import json
+import redis
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'your-secret-key'  # Required for Flask-SocketIO
-socketio = SocketIO(app, cors_allowed_origins="*")
+app.config['SECRET_KEY'] = 'your-secret-key'
 
-# Environment variables with defaults for Docker PostgreSQL image
+# Redis configuration
+REDIS_URL = os.environ.get('REDIS_URL', 'redis://localhost:6379')
+redis_client = redis.from_url(REDIS_URL)
+
+# Initialize SocketIO with message queue
+socketio = SocketIO(app,
+                   cors_allowed_origins="*",
+                   message_queue=REDIS_URL,
+                   engineio_logger=True)
+
+# PostgreSQL configuration
 POSTGRES_USER = os.environ.get("POSTGRES_USER", "postgres")
 POSTGRES_PASSWORD = os.environ.get("POSTGRES_PASSWORD", "postgres")
 POSTGRES_DB = os.environ.get("POSTGRES_DB", POSTGRES_USER)
@@ -71,7 +82,7 @@ def get_all_tasks():
 def broadcast_tasks():
     """Broadcast updated tasks to all connected clients"""
     tasks = get_all_tasks()
-    socketio.emit('tasks_updated', {'tasks': tasks})
+    socketio.emit('tasks_updated', {'tasks': tasks}, namespace='/')
 
 @app.route("/")
 def index():
