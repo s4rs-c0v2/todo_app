@@ -1,0 +1,48 @@
+version: "3.8"
+
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-todo_user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-todo_pass}
+      - POSTGRES_DB=${POSTGRES_DB:-todo_app}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+  app:
+    image: todo_app_app
+    environment:
+      - POSTGRES_HOST=db
+      - POSTGRES_USER=${POSTGRES_USER:-todo_user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-todo_pass}
+      - POSTGRES_DB=${POSTGRES_DB:-todo_app}
+    ports:
+      - "5000:5000"
+    deploy:
+      replicas: 2
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first
+      restart_policy:
+        condition: on-failure
+      placement:
+        max_replicas_per_node: 1
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  default:
+    driver: overlay

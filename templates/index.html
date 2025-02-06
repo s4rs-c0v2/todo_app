@@ -1,29 +1,95 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Todo App</title>
-</head>
-<body>
-    <h1>Todo List</h1>
-    <form method="POST" action="/">
-        <input type="text" name="content" placeholder="New task" required>
-        <button type="submit">Add Task</button>
-    </form>
+{% extends "base.html" %} {% block content %}
+<h1>Todo App</h1>
 
-    <ul>
-        {% for task in tasks %}
-            <li>
-                <form action="{{ url_for('update_task', task_id=task[0]) }}" method="POST" style="display:inline;">
-                    <input type="checkbox" name="done" onchange="this.form.submit()" {% if task[2] %}checked{% endif %}>
-                </form>
-                <span style="{% if task[2] %}text-decoration: line-through;{% endif %}">
-                    {{ task[1] }} ({{ task[3].strftime('%Y-%m-%d %H:%M') }})
-                </span>
-                <form action="{{ url_for('delete_task', task_id=task[0]) }}" method="POST" style="display:inline;">
-                    <button type="submit">Delete</button>
-                </form>
-            </li>
-        {% endfor %}
-    </ul>
-</body>
-</html>
+<form id="add-form" class="add-form">
+    <input type="text" name="content" required placeholder="Enter a new task" />
+    <button type="submit">Add Task</button>
+</form>
+
+<div id="task-list">
+    {% for task in tasks %}
+    <div class="task">
+        <form class="task-form">
+            <input
+                type="checkbox"
+                onchange="updateTask({{ task.id }}, this.checked)"
+                {%
+                if
+                task.is_done
+                %}checked{%
+                endif
+                %}
+            />
+            <span class="{% if task.is_done %}completed{% endif %}"
+                >{{ task.content }}</span
+            >
+            <button
+                type="button"
+                onclick="deleteTask({{ task.id }})"
+                class="delete-btn"
+            >
+                Delete
+            </button>
+        </form>
+    </div>
+    {% endfor %}
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+<script>
+    const socket = io();
+
+    socket.on("connect", () => {
+        console.log("Connected to server");
+    });
+
+    socket.on("tasks_updated", function (data) {
+        updateTaskList(data.tasks);
+    });
+
+    document
+        .getElementById("add-form")
+        .addEventListener("submit", function (e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            fetch("/add_task", {
+                method: "POST",
+                body: formData,
+            });
+            this.reset();
+        });
+
+    function updateTask(taskId, isDone) {
+        const formData = new FormData();
+        formData.append("done", isDone);
+        fetch(`/update/${taskId}`, {
+            method: "POST",
+            body: formData,
+        });
+    }
+
+    function deleteTask(taskId) {
+        fetch(`/delete/${taskId}`, {
+            method: "POST",
+        });
+    }
+
+    function updateTaskList(tasks) {
+        const taskList = document.getElementById("task-list");
+        taskList.innerHTML = tasks
+            .map(
+                (task) => `
+                <div class="task">
+                    <form class="task-form">
+                        <input type="checkbox" onchange="updateTask(${task.id}, this.checked)"
+                               ${task.is_done ? "checked" : ""}>
+                        <span class="${task.is_done ? "completed" : ""}">${task.content}</span>
+                        <button type="button" onclick="deleteTask(${task.id})" class="delete-btn">Delete</button>
+                    </form>
+                </div>
+            `,
+            )
+            .join("");
+    }
+</script>
+{% endblock %}
